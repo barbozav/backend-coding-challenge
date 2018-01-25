@@ -25,7 +25,7 @@ Build a basic view to check the status of all translations.
 
 #### Requirements
 * Use a queue system of your liking
-* MongoDB
+* MongoDB or Postgres
 * Create a scalable application. 
 * Only use Unbabel's Translation API on sandbox mode
 * Have the news titles translated to 2 languages
