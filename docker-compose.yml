@@ -1,0 +1,30 @@
+version: '2.1'
+
+services:
+  postgres:
+    restart: always
+    image: postgres:10
+    env_file:
+      - psql.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+
+  redis:
+    restart: always
+    image: redis
+
+app:
+  restart: always
+  build: .
+  ports:
+    - 5000:5000
+  volumes:
+    - .:/src
+  depends_on:
+    - postgres
+    - redis
+  entrypoint: ["python", "challenge.py"]

@@ -1,0 +1,9 @@
+attrs
+dramatiq[redis]
+dynaconf
+Flask
+flask-wtf
+flask-sqlalchemy
+flask-migrate
+redis
+requests
