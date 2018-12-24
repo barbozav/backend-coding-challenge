@@ -28,3 +28,13 @@ services:
       - postgres
       - redis
     entrypoint: ["python", "challenge.py"]
+
+  worker:
+    restart: always
+    build: .
+    volumes:
+      - .:/src
+    depends_on:
+      - postgres
+      - redis
+    entrypoint: ["dramatiq", "app.routes"]
