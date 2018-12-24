@@ -35,7 +35,8 @@ class Client(object):
         payload = {
             'text': input,
             'source_language': source_language,
-            'target_language': target_language
+            'target_language': target_language,
+            'callback_url': 'http://a1510085.ngrok.io'
         }
 
         return self._post(url, payload).json()
