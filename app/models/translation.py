@@ -1,26 +1,7 @@
-from attr import attrib, attrs
-
-from eventstore.base import Aggregate, Event
-
-
-@attrs(frozen=True)
-class TranslationCreated(Event):
-    text = attrib(type=str)
-
-
-@attrs(frozen=True)
-class TranslationRequested(Event):
-    id = attrib(type=int)
-
-
-@attrs(frozen=True)
-class TranslationPending(Event):
-    pass
-
-
-@attrs(frozen=True)
-class TranslationFinished(Event):
-    translated_text = attrib(type=str)
+from models.base import Aggregate
+from models.errors import InvalidEventError
+from models.events import (TranslationCreated, TranslationFinished,
+                           TranslationPending, TranslationRequested)
 
 
 class Translation(Aggregate):
@@ -34,13 +15,14 @@ class Translation(Aggregate):
             self.text = event.text
             self.status = 'created'
         elif isinstance(event, TranslationRequested):
-            self.id = event.id
+            self.translation_id = event.translation_id
             self.status = 'requested'
         elif isinstance(event, TranslationPending):
             self.status = 'pending'
         elif isinstance(event, TranslationFinished):
             self.translated_text = event.translated_text
             self.status = 'translated'
+            self.finished = True
         else:
-            raise ValueError('Unknown event!')
+            raise InvalidEventError(f'Invalid event: {event}')
         self.changes.append(event)
