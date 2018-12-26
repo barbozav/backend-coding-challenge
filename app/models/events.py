@@ -1,6 +1,6 @@
 from attr import attrib, attrs
 
-from domain.model.base import Event
+from app.models.base import Event
 
 
 @attrs(frozen=True)
@@ -10,7 +10,7 @@ class TranslationCreated(Event):
 
 @attrs(frozen=True)
 class TranslationRequested(Event):
-    unbabel_id = attrib(type=int)
+    translation_id = attrib(type=int)
 
 
 @attrs(frozen=True)

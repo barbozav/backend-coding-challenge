@@ -1,4 +1,4 @@
-import uuid
+import json
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
@@ -24,7 +24,7 @@ class PostgresEventStore(EventStore):
         logger.debug(aggregate)
 
         version = aggregate.version
-        events = [(row.event, row.data) for row in aggregate.events]
+        events = aggregate.events
 
         return EventStream(version, events)
 
@@ -55,14 +55,14 @@ class PostgresEventStore(EventStore):
                 raise WriteError()
 
         for event in events:
+            sql_values = (f"VALUES('{event.id}', '{aggregate_uuid}', "
+                          f"'{event.__class__.__name__}', "
+                          f"'{json.dumps(event.as_dict())}')")
+
             sql = (f"INSERT INTO events (uuid, aggregate_uuid, event, data) "
-                   f"VALUES ('{uuid.uuid4()}', '{aggregate_uuid}', "
-                   f"'{event.__class__.__name__}', '{event.as_dict()}')")
+                   f"{sql_values} ON CONFLICT (uuid) DO NOTHING")
 
             result = connection.execute(sql)
 
             logger.debug(sql)
             logger.debug(result)
-
-            if result.rowcount != len(events):
-                raise WriteError()

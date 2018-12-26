@@ -7,20 +7,23 @@ from attr import asdict, attrib, attrs
 
 @attrs(frozen=True)
 class Event(ABC):
+    id = attrib()
     occurred_at = attrib()
 
     @classmethod
     def create(cls, *args, **kwargs):
-        return cls(datetime.utcnow().isoformat(), *args, **kwargs)
+        event_uuid = str(uuid.uuid4())
+        occurred_at = datetime.utcnow().isoformat()
+        return cls(event_uuid, occurred_at, *args, **kwargs)
 
     def as_dict(self):
         return asdict(self)
 
 
 class Aggregate(ABC):
-    def __init__(self, aggregate_uuid):
+    def __init__(self, aggregate_uuid, version=None):
         self._id = aggregate_uuid
-        self._version = None
+        self._version = version
         self._changes = []
 
     @property

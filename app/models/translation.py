@@ -1,7 +1,7 @@
-from models.base import Aggregate
-from models.errors import InvalidEventError
-from models.events import (TranslationCreated, TranslationFinished,
-                           TranslationPending, TranslationRequested)
+from app.models.base import Aggregate
+from app.models.errors import InvalidEventError
+from app.models.events import (TranslationCreated, TranslationFinished,
+                               TranslationPending, TranslationRequested)
 
 
 class Translation(Aggregate):
