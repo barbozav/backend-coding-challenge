@@ -1,4 +1,4 @@
-from app.errors import ChallengeError
+from challenge.errors import ChallengeError
 
 
 class EventStoreError(ChallengeError):

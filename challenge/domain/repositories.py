@@ -1,6 +1,4 @@
-from app.data.postgresql import PostgresEventStore
-from app.models import events
-from app.models.translation import Translation
+from challenge.domain.model import translation
 
 
 class AggregatesRepository:
@@ -26,7 +24,7 @@ class AggregatesRepository:
     def _event_row_to_object(self, event_rows):
         event_objects = []
         for row in event_rows:
-            event_cls = getattr(events, row.event)
+            event_cls = getattr(translation, row.event)
             kwargs = row.data
             kwargs['id'] = row.uuid
 
@@ -35,7 +33,3 @@ class AggregatesRepository:
             event_objects.append(instance)
 
         return event_objects
-
-
-translations_repository = AggregatesRepository(Translation,
-                                               PostgresEventStore())

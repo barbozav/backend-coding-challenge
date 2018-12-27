@@ -3,7 +3,6 @@ dramatiq[redis]
 dynaconf
 Flask
 flask-bootstrap
-flask-sqlalchemy
 flask-wtf
 gunicorn
 pika
@@ -11,4 +10,5 @@ psycopg2
 pytest
 redis
 requests
+sqlalchemy
 tenacity

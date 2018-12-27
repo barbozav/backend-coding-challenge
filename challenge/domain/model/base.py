@@ -17,7 +17,9 @@ class Event(ABC):
         return cls(event_uuid, occurred_at, *args, **kwargs)
 
     def as_dict(self):
-        return asdict(self)
+        d = asdict(self)
+        d.pop('id', None)
+        return d
 
 
 class Aggregate(ABC):

@@ -1,15 +1,12 @@
 from urllib.parse import urljoin
 
 import requests
-from dynaconf import settings
 
-api_client = settings.get('API_CLIENT')
-api_token = settings.get('API_TOKEN')
-api_url = settings.get('API_URL')
+SANDBOX_API_URL = 'https://sandbox.unbabel.com/tapi/v2/'
 
 
-class Client(object):
-    def __init__(self, client=api_client, token=api_token, url=api_url):
+class Client:
+    def __init__(self, client, token, url=SANDBOX_API_URL):
 
         self._url = url
 
@@ -34,8 +31,7 @@ class Client(object):
         payload = {
             'text': input,
             'source_language': source_language,
-            'target_language': target_language,
-            'callback_url': 'http://8d41ef9e.ngrok.io'
+            'target_language': target_language
         }
 
         return self._post(url, payload).json()

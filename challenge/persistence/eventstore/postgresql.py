@@ -1,22 +1,30 @@
 import json
 
-from app import app, db
-from app.data.base import EventStore, EventStream
-from app.data.errors import ConcurrencyError, NotFoundError, WriteError
-from app.data.model import AggregateModel
+from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
+
+from challenge.persistence.eventstore.base import EventStore, EventStream
+from challenge.persistence.eventstore.errors import (ConcurrencyError,
+                                                     NotFoundError, WriteError)
+from challenge.persistence.eventstore.model import AggregateModel
+from challenge.utils.logging import logger
 
 
 class PostgresEventStore(EventStore):
+    def __init__(self, db):
+        Session = sessionmaker()
+        self._session = Session(bind=db)
+
     def load_stream(self, aggregate_uuid):
         try:
-            aggregate = db.session.query(AggregateModel).options(
-                db.joinedload('events')).filter(
+            aggregate = self._session.query(AggregateModel).options(
+                joinedload('events')).filter(
                     AggregateModel.uuid == str(aggregate_uuid)).one()
-        except db.NoResultFound:
+        except NoResultFound:
             raise NotFoundError(f'Aggregate not found: {aggregate_uuid}')
 
-        app.logger.info(f'Loading aggregate: {aggregate_uuid}')
-        app.logger.debug(aggregate)
+        logger.info(f'Loading aggregate: {aggregate_uuid}')
+        logger.debug(aggregate)
 
         version = aggregate.version
         events = aggregate.events
@@ -29,11 +37,11 @@ class PostgresEventStore(EventStore):
                    f"SET version = {expected_version} + 1 "
                    f"WHERE version = {expected_version} "
                    f"AND uuid = '{aggregate_uuid}'")
-            result = db.session.execute(sql)
+            result = self._session.execute(sql)
 
-            app.logger.debug(sql)
-            app.logger.debug(result)
-            app.logger.info(f'Updated aggregate: {aggregate_uuid}')
+            logger.debug(sql)
+            logger.debug(result)
+            logger.info(f'Updated aggregate: {aggregate_uuid}')
 
             if result.rowcount != 1:
                 raise ConcurrencyError(
@@ -41,11 +49,11 @@ class PostgresEventStore(EventStore):
         else:
             sql = (f"INSERT INTO aggregates (uuid, version) "
                    f"VALUES ('{aggregate_uuid}', 1)")
-            result = db.session.execute(sql)
+            result = self._session.execute(sql)
 
-            app.logger.debug(sql)
-            app.logger.debug(result)
-            app.logger.info(f'Created aggregate: {aggregate_uuid}')
+            logger.debug(sql)
+            logger.debug(result)
+            logger.info(f'Created aggregate: {aggregate_uuid}')
 
             if result.rowcount != 1:
                 raise WriteError('Failed to insert aggregate into database.')
@@ -58,11 +66,11 @@ class PostgresEventStore(EventStore):
             sql = (f"INSERT INTO events (uuid, aggregate_uuid, event, data) "
                    f"{sql_values} ON CONFLICT (uuid) DO NOTHING")
 
-            result = db.session.execute(sql)
+            result = self._session.execute(sql)
 
-            app.logger.debug(sql)
-            app.logger.debug(result)
+            logger.debug(sql)
+            logger.debug(result)
             if result.rowcount:
-                app.logger.info(f'Created event: {event.id}')
+                logger.info(f'Created event: {event.id}')
 
-        db.session.commit()
+        self._session.commit()
