@@ -2,39 +2,51 @@ version: '2.1'
 
 services:
   postgres:
+    container_name: challenge_postgres
     restart: always
     image: postgres:10
-    #env_file:
-      #- .env
     environment:
-      - POSTGRES_USER=psql
-      - POSTGRES_PASSWORD=psql
-      - POSTGRES_DB=unbabel
+      - POSTGRES_USER=unbabel
+      - POSTGRES_PASSWORD=unbabel
+      - POSTGRES_DB=translations
     ports:
-      - "5432"
+      - 5432:5432
 
   redis:
+    container_name: challenge_redis
     restart: always
     image: redis
 
   app:
+    container_name: challenge_app
     restart: always
     build: .
+    env_file:
+      - .env
     ports:
       - 5000:5000
     volumes:
       - .:/src
+    links:
+      - postgres
+      - redis
     depends_on:
       - postgres
       - redis
-    entrypoint: ["python", "challenge.py"]
+    command:  "gunicorn -b 0.0.0.0:5000 app:app"
 
   worker:
+    container_name: challenge_worker
     restart: always
     build: .
+    env_file:
+      - .env
     volumes:
       - .:/src
+    links:
+      - postgres
+      - redis
     depends_on:
       - postgres
       - redis
-    entrypoint: ["dramatiq", "app.routes"]
+    command: "dramatiq app.services"

@@ -2,8 +2,13 @@ attrs
 dramatiq[redis]
 dynaconf
 Flask
-flask-wtf
+flask-bootstrap
 flask-sqlalchemy
-flask-migrate
+flask-wtf
+gunicorn
+pika
+psycopg2
+pytest
 redis
 requests
+tenacity
