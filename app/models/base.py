@@ -46,6 +46,7 @@ class Aggregate(ABC):
 
         for event in events:
             instance.apply(event)
+
         return instance
 
     @abstractmethod

@@ -1,24 +1,19 @@
-from sqlalchemy import JSON, VARCHAR, Column, ForeignKey, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-Base = declarative_base()
+from app import db
 
 
-class AggregateModel(Base):
+class AggregateModel(db.Model):
     __tablename__ = 'aggregates'
+    uuid = db.Column(db.VARCHAR(36), primary_key=True)
+    version = db.Column(db.Integer, default=1)
 
-    uuid = Column(VARCHAR(36), primary_key=True)
-    version = Column(Integer, default=1)
 
-
-class EventModel(Base):
+class EventModel(db.Model):
     __tablename__ = 'events'
 
-    uuid = Column(VARCHAR(36), primary_key=True)
+    uuid = db.Column(db.VARCHAR(36), primary_key=True)
+    event = db.Column(db.VARCHAR(36))
+    data = db.Column(db.JSON)
 
-    event = Column(VARCHAR(36))
-    data = Column(JSON)
-
-    aggregate_uuid = Column(VARCHAR(36), ForeignKey('aggregates.uuid'))
-    aggregate = relationship(AggregateModel, backref='events')
+    aggregate_uuid = db.Column(
+        db.VARCHAR(36), db.ForeignKey('aggregates.uuid'))
+    aggregate = db.relationship(AggregateModel, backref='events')
