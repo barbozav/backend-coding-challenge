@@ -1,4 +1,6 @@
+from app.data.postgresql import PostgresEventStore
 from app.models import events
+from app.models.translation import Translation
 
 
 class AggregatesRepository:
@@ -33,3 +35,7 @@ class AggregatesRepository:
             event_objects.append(instance)
 
         return event_objects
+
+
+translations_repository = AggregatesRepository(Translation,
+                                               PostgresEventStore())
