@@ -1,9 +1,16 @@
-class EventStoreError(Exception):
+from app.errors import ChallengeError
+
+
+class EventStoreError(ChallengeError):
     """Base event store error."""
 
 
 class ReadError(EventStoreError):
     """Raised when an error occurs on a read operation."""
+
+
+class NotFoundError(ReadError):
+    """Raised when trying to read an inexistent event stream."""
 
 
 class WriteError(EventStoreError):
@@ -12,11 +19,3 @@ class WriteError(EventStoreError):
 
 class ConcurrencyError(WriteError):
     """Raised when a concurrency error occurs on a write operation."""
-
-
-class DuplicateIdError(WriteError):
-    """Raised when inserting an event stream with a duplicate id."""
-
-
-class NotFoundError(ReadError):
-    """Raised when trying to read an inexistent event stream."""

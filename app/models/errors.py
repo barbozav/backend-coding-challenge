@@ -1,4 +1,7 @@
-class AggregateError(Exception):
+from app.errors import ChallengeError
+
+
+class AggregateError(ChallengeError):
     """Base event sourced aggregate error."""
 
 
