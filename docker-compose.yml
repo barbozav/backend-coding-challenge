@@ -34,7 +34,7 @@ services:
       - worker
       - postgres
       - redis
-    command:  "gunicorn -b 0.0.0.0:5000 challenge.application:app"
+    command:  "gunicorn -k gevent -b 0.0.0.0:5000 challenge.application:app"
 
   worker:
     container_name: challenge_worker
@@ -50,4 +50,4 @@ services:
     depends_on:
       - postgres
       - redis
-    command: "dramatiq challenge.application.tasks"
+    command: "dramatiq --processes 4 --threads 2 challenge.application.tasks"

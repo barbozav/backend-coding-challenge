@@ -1,0 +1,15 @@
+{% if translation.status == 'finished' %}
+<tr data-toggle="tooltip" data-placement="bottom" title="first tooltip
+first tooltip first tooltip
+first tooltip first tooltip first tooltip
+first tooltip first tooltip first tooltip first tooltip first tooltip first tooltip first tooltip first tooltip">
+    {% else %}
+<tr>
+    {% endif %}
+    <td>{{ translation.text }}</td>
+    {% if translation.status == 'finished' %}
+    <td>{{ translation.translated_text }}</td>
+    {% else %}
+    <td> {{ translation.status }} </td>
+    {% endif %}
+</tr>

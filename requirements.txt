@@ -4,6 +4,7 @@ dynaconf
 Flask
 flask-bootstrap
 flask-wtf
+gevent
 gunicorn
 pika
 psycopg2

@@ -3,27 +3,22 @@ import time
 import dramatiq
 from dynaconf import settings
 
-from challenge.application import repository
+from challenge.application import projections, repository
 from challenge.domain.model.translation import (
-    TranslationAborted, TranslationFinished, TranslationPending,
-    TranslationRequested)
+    TranslationAborted, TranslationFinished, TranslationPending)
 from challenge.domain.services.unbabel.client import Client
 
+from challenge.utils.logging import logger
+
 _client = Client(
-    client=settings.get('API_CLIENT'),
-    token=settings.get('API_TOKEN'),
-    url=settings.get('API_URL'))
-
-
-def _translation_requested(status):
-    new = (status == 'new')
-    return new
+    client=settings.API_CLIENT, token=settings.API_TOKEN, url=settings.API_URL)
 
 
 def _translation_pending(status):
+    new = (status == 'new')
     accepted = (status == 'accepted')
     translating = (status == 'translating')
-    return accepted or translating
+    return new or accepted or translating
 
 
 def _translation_finished(status):
@@ -44,14 +39,24 @@ def _poll_translation(id):
             event = TranslationPending.create()
             translation.apply(event)
             repository.save(translation)
+            projections_task.send(id)
         elif _translation_finished(
                 status) and translation.status != 'finished':
             translation = repository.get(id)
             event = TranslationFinished.create(response_json['translatedText'])
             translation.apply(event)
             repository.save(translation)
+            projections_task.send(id)
             break
         time.sleep(5)
+
+
+@dramatiq.actor
+def projections_task(id):
+    logger.debug('')
+    translation = repository.get(id)
+    for event in translation.changes:
+        projections.handle(id, event)
 
 
 @dramatiq.actor
@@ -62,8 +67,8 @@ def translation_task(id):
     uid = response_json['uid']
     status = response_json['status']
 
-    if _translation_requested(status):
-        event = TranslationRequested.create(uid)
+    if _translation_pending(status):
+        event = TranslationPending.create(uid)
         translation.apply(event)
         repository.save(translation)
         _poll_translation(id)
@@ -71,3 +76,5 @@ def translation_task(id):
         event = TranslationAborted.create('Failed to request translation.')
         translation.apply(event)
         repository.save(translation)
+
+    projections_task.send(id)

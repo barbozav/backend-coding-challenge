@@ -4,5 +4,8 @@ from wtforms.validators import DataRequired
 
 
 class TranslationForm(FlaskForm):
-    text = TextAreaField('Text', validators=[DataRequired()])
+    text = TextAreaField(
+        '',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Enter here a text to be translated."})
     submit = SubmitField('Translate')
