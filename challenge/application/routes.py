@@ -46,21 +46,9 @@ def translations():
 
     translations = projections.paginate(page)
 
-    if request.method == 'POST':
-        translations_json = jsonify([{
-            'text': translation.text or '',
-            'status': translation.status or '',
-            'translated_text': translation.text or ''
-        } for translation in translations['items']])
-        return translations_json
-    else:
-        if translations['has_next']:
-            next_url = url_for('translations', page=translations['next_page'])
-        if translations['has_prev']:
-            prev_url = url_for('translations', page=translations['prev_page'])
-
-        return render_template(
-            'translations.html',
-            translations=translations['items'],
-            next_url=next_url or None,
-            prev_url=prev_url or None)
+    translations_json = jsonify([{
+        'text': translation.text or '',
+        'status': translation.status or '',
+        'translated_text': translation.text or ''
+    } for translation in translations['items']])
+    return translations_json

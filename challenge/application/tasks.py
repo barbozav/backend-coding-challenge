@@ -2,8 +2,9 @@ import time
 
 import dramatiq
 from dynaconf import settings
+from flask_sse import sse
 
-from challenge.application import projections, repository
+from challenge.application import app, projections, repository
 from challenge.domain.model.translation import (
     TranslationAborted, TranslationFinished, TranslationPending)
 from challenge.domain.services.unbabel.client import Client
@@ -39,24 +40,20 @@ def _poll_translation(id):
             event = TranslationPending.create()
             translation.apply(event)
             repository.save(translation)
-            projections_task.send(id)
+            projections.handle(id, event)
+            with app.app_context():
+                sse.publish({'id': f'{id}'})
         elif _translation_finished(
                 status) and translation.status != 'finished':
             translation = repository.get(id)
             event = TranslationFinished.create(response_json['translatedText'])
             translation.apply(event)
             repository.save(translation)
-            projections_task.send(id)
+            projections.handle(id, event)
+            with app.app_context():
+                sse.publish({'id': f'{id}'})
             break
-        time.sleep(5)
-
-
-@dramatiq.actor
-def projections_task(id):
-    logger.debug('')
-    translation = repository.get(id)
-    for event in translation.changes:
-        projections.handle(id, event)
+        time.sleep(2)
 
 
 @dramatiq.actor
@@ -77,4 +74,4 @@ def translation_task(id):
         translation.apply(event)
         repository.save(translation)
 
-    projections_task.send(id)
+    projections.handle(id, event)

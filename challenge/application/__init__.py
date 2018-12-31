@@ -4,6 +4,7 @@ from dynaconf import FlaskDynaconf, settings
 from flask import Flask
 from flask.logging import default_handler
 from flask_bootstrap import Bootstrap
+from flask_sse import sse
 
 from challenge.domain.model.translation import Translation
 from challenge.domain.projections import TranslationProjections
@@ -34,7 +35,7 @@ def create_projections():
 
 def setup_worker():
     logger.info('creating tasks queue')
-    broker = RedisBroker(url=f'{settings.BROKER_URI}')
+    broker = RedisBroker(url=f'{settings.REDIS_URL}')
     dramatiq.set_broker(broker)
 
 
@@ -43,6 +44,7 @@ def create_app():
     app = Flask(__name__)
     Bootstrap(app)
     FlaskDynaconf(app)
+    app.register_blueprint(sse, url_prefix='/stream')
 
     app.logger.removeHandler(default_handler)
 

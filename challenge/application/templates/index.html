@@ -36,3 +36,16 @@
     </ul>
 </nav>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    var source = new EventSource("{{ url_for('sse.stream') }}");
+    source.addEventListener('sse', function (event) {
+        var data = JSON.parse(event.data);
+    }, false);
+    source.addEventListener('error', function (event) {
+        print("Failed to connect to event stream.");
+    }, false);
+</script>
+{% endblock %}
