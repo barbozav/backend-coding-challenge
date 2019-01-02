@@ -8,7 +8,7 @@ I've built a Flask web application which translates input text from English to S
 
 ## TL;DR
 
-Set `.env` environment variables and run:
+Stop local PostgreSQL service to avoid port conflicts, set `.env` environment variables and run:
 
 ```bash
 docker-compose up -f docker-compose.yml --build --force-recreate
