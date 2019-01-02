@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant C as Client
+    participant A as Application
+    participant W as Worker
+    participant U as Unbabel API
+    participant R as Repository
+    participant D as Database
+
+    C->>A: Post a translation request.
+    A->>R: Create a translation aggregate and append a "created" event to stream. [1]
+    R->>D: Insert into database.
+    A->>W: Send translation to worker.
+    A->>C: Update the translations list.
+Note right of C: This message <br> (and the other <br> updates sent to the <br> frontend clients) is <br>sent to all clients <br> listening to events <br> which update the <br> queue using AJAX.
+    A-->>C: Respond 200 (OK).
+    W->>U: Request a translation.
+    U-->>W: Respond with translation data.
+Note right of W: Here we get the <br> Unbabel translation <br> ID of a pending <br> translation for <br> fetching it later.
+    W->>R: Append a "pending" event to stream. [2]
+    R->>D: Insert into database.
+    W->>C: Update the translations list.
+    loop "finished"?
+        W->>U: Fetch the translation.
+        U-->>W: Respond with translation data.
+Note right of W: Here we get the <br> Unbabel translation <br> status of a pending <br> translation and wait <br> until it has changed <br> to "finished".
+
+    end
+    W->>R: Append a "finished" event to stream. [3]
+    R->>D: Insert into database.
+    W->>C: Update the translations list.
