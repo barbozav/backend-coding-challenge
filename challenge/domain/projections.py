@@ -1,44 +1,95 @@
 from functools import singledispatch
 
+from attr import attrib, attrs
 from dynaconf import settings
 
 from challenge.domain.model.translation import (
     TranslationFinished, TranslationPending, TranslationRequested)
-from challenge.utils.logging import logger
 from challenge.persistence import session_scope
+from challenge.utils.logging import logger
+
+
+@attrs(frozen=True)
+class Pagination:
+    """A simple pagination helper.
+
+    Attributes:
+        items (Query): "translations" table queried rows.
+        total (int): "translations" table total count of rows.
+        page (int): Instance page.
+
+    """
+
+    items = attrib()
+    total = attrib()
+    page = attrib()
+
+    @property
+    def has_prev(self):
+        """Return true if there's a previous page."""
+        return self.page > 1
+
+    @property
+    def prev_page(self):
+        """Return the previous page number if it exists."""
+        return self.page - 1 if self.has_prev else None
+
+    @property
+    def has_next(self):
+        """Return true if there's a next page."""
+        limit = self.page * settings.TRANSLATIONS_PER_PAGE
+        return limit < self.total
+
+    @property
+    def next_page(self):
+        """Return the next page number if it exists."""
+        return self.page + 1 if self.has_next else None
 
 
 class TranslationProjections:
+    """Interface between the application layer and persistence layer.
+
+    It translates the domain layer models to persistence data models.
+
+    For now we have a Translation projection for visualization, but it
+    could be expanded for other projections as auditing or data
+    analysis.
+
+    Args:
+        read_model: The translations projection (read-model).
+
+    """
+
     def __init__(self, read_model):
         self._read_model = read_model
 
     def paginate(self, page=1):
+        """Get all translation items from a single page.
+
+        Args:
+            page (int): Page number.
+
+        """
         with session_scope() as session:
-            count = self._read_model.count(session)
+            total = self._read_model.count(session)
             items = self._read_model.get(session, page)
 
-            prev_page = page - 1 if page > 1 else None
-
-            if page * settings.TRANSLATIONS_PER_PAGE < count:
-                next_page = page + 1
-            else:
-                next_page = None
-
-            pagination = {
-                'items': items,
-                'has_prev': prev_page is not None,
-                'prev_page': prev_page,
-                'has_next': next_page is not None,
-                'next_page': next_page
-            }
-
-            return pagination
-
-    def has_hext(self, page):
-        with session_scope() as session:
-            self._read_model.get(session, page)
+        return Pagination(items=items, total=total, page=page)
 
     def handle(self, aggregate_uuid, event):
+        """Handle events and update the projections.
+
+        Received an event, it decides whether insert a new projection
+        or update the existing ones accordingly.
+
+        Args:
+            aggregate_uuid (str): An UUID4 string to which aggregate
+                projection should be update.
+            event (Event): An `Event` to handle. The read-model data
+                persistence operation is chosen based on this event.
+
+        """
+
         @singledispatch
         def _handle(_event):
             pass

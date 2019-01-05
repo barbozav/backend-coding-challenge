@@ -59,6 +59,7 @@ class PostgresTranslation:
 
         session.execute(sql)
 
+        logger.debug('inserted into read-model')
         logger.debug(sql)
 
     def update_to_pending(self, session, aggregate_uuid):
@@ -76,6 +77,7 @@ class PostgresTranslation:
 
         session.execute(sql)
 
+        logger.debug('updated read-model')
         logger.debug(sql)
 
     def update_to_finished(self, session, aggregate_uuid, translated_text):
@@ -95,4 +97,5 @@ class PostgresTranslation:
 
         session.execute(sql)
 
+        logger.debug('updated read-model')
         logger.debug(sql)

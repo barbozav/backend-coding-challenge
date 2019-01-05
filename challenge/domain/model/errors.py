@@ -2,16 +2,16 @@ from challenge.errors import ChallengeError
 
 
 class AggregateError(ChallengeError):
-    """Base event sourced aggregate error."""
+    """Base aggregate error."""
 
 
 class InvalidEventError(AggregateError, ValueError):
-    """Raised when attempting to apply an invalid event."""
+    """Invalid event triggered error."""
 
 
 class TranslationError(AggregateError):
     """Base Translation error."""
 
 
-class AlreadyFinishedError(TranslationError):
-    """Raised when attempting to change a finished translation."""
+class InvalidStatusError(TranslationError, ValueError):
+    """Invalid status transition error."""

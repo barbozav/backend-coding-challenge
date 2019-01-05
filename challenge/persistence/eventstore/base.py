@@ -8,9 +8,8 @@ class EventStream:
     """Event stream.
 
     Attributes:
-    version (int): Event stream version for optimistic locking.
-    events ([Event]): List of events.
-
+        version (int): Event stream version for optimistic locking.
+        events ([Event]): List of events.
 
     """
 
