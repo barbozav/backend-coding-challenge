@@ -6,16 +6,16 @@ class EventStoreError(ChallengeError):
 
 
 class ReadError(EventStoreError):
-    """Raised when an error occurs on a read operation."""
-
-
-class NotFoundError(ReadError):
-    """Raised when trying to read an inexistent event stream."""
+    """Event store read operation error."""
 
 
 class WriteError(EventStoreError):
-    """Raised when an error occurs on a write operation."""
+    """Event store write operation error."""
+
+
+class NotFoundError(ReadError):
+    """Inexistent event stream error."""
 
 
 class ConcurrencyError(WriteError):
-    """Raised when a concurrency error occurs on a write operation."""
+    """Optimistic lock for concurrency error."""
