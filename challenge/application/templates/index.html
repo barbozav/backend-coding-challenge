@@ -14,12 +14,14 @@
         <th>Spanish Text</th>
     </thead>
 
-    <tbody>
+    <tbody id='translations'>
         {% for translation in translations %}
         {% include '_post.html' %}
         {% endfor %}
     </tbody>
 </table>
+
+<div id='result'></div>
 
 <nav aria-label="...">
     <ul class="pager">
@@ -40,13 +42,42 @@
 {% block scripts %}
 {{ super() }}
 <script>
-    var source = new EventSource("{{ url_for('sse.stream') }}");
-    source.addEventListener('sse', function (event) {
-        var data = JSON.parse(event.data);
-        alert("Success.")
-    }, false);
-    source.addEventListener('error', function (event) {
-        alert("Failed.");
-    }, false);
+    function pollTranslations() {
+        // Get the URL argument "page" if set.
+        page = "1";
+        searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has("page")) {
+            page = searchParams.get("page");
+        }
+
+        // Get translations from the JSON route.
+        $.getJSON("/json/" + page, function (data) {
+            rows = "";
+            $(data).each(function (i, translation) {
+                if (translation.status === "finished") {
+                    translated_text = translation.translated_text;
+                } else {
+                    translated_text = "<i>" + translation.status + "</i>";
+                }
+
+                // Append a table row.
+                rows += "<tr>" +
+                    "<td>" + translation.text + "</td>" +
+                    "<td>" + translated_text + "</td>" +
+                    "</tr>";
+            });
+
+            // Write the table entries.
+            $("#translations").html(rows);
+        });
+
+        // Poll the JSON route every 5 seconds.
+        setTimeout(pollTranslations, 5000);
+    };
+
+    // Start polling after the page is loaded.
+    $(document).ready(function () {
+        pollTranslations();
+    });
 </script>
 {% endblock %}

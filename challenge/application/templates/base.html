@@ -20,7 +20,7 @@ Coding Challenge
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('index') }}">Translations</a></li>
+                <li><a href="{{ url_for('translations') }}">JSON</a></li>
                 <li><a href="{{ url_for('index') }}">About</a></li>
             </ul>
         </div>
@@ -30,15 +30,6 @@ Coding Challenge
 
 {% block content %}
 <div class="container">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-info" role="alert">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    {# application content needs to be provided in the app_content block #}
     {% block app_content %}{% endblock %}
 </div>
 {% endblock %}

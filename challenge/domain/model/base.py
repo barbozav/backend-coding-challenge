@@ -43,8 +43,6 @@ class Event(ABC):
         values.
 
         """
-        #d = asdict(self)
-        #d.pop('id', None)
         return asdict(self)
 
 

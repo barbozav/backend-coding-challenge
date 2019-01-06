@@ -99,7 +99,6 @@ class TranslationProjections:
             translated_text = None
 
         logger.info(f'updating projection: {aggregate_uuid}')
-        logger.debug(f'{text}, {status}, {translated_text}')
         with session_scope() as session:
             self._read_model.insert_or_update(session, aggregate_uuid, status,
                                               text, translated_text)

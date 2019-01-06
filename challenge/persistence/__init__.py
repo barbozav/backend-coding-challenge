@@ -10,6 +10,7 @@ Session = sessionmaker()
 
 
 def create_db(uri=None):
+    """Create SQLAlchemy database engine and Session binding."""
     uri = uri or settings.DATABASE_URI
     db = sqlalchemy.create_engine(uri)
     Session.configure(bind=db)
@@ -17,11 +18,13 @@ def create_db(uri=None):
 
 
 def create_tables(db):
+    """Create all database tables."""
     Base.metadata.create_all(db)
 
 
 @contextmanager
 def session_scope():
+    """Session context for application interface with database."""
     session = Session()
     try:
         yield session

@@ -1,2 +1,2 @@
 class ChallengeError(Exception):
-    """Raised when an error occurs."""
+    """Base error for the Challenge application and submodules."""

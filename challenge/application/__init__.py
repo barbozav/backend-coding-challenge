@@ -16,7 +16,7 @@ from challenge.utils.logging import logger
 
 
 def setup_database():
-    """Setup database and create tables.
+    """Set up database and create tables.
 
     For this application purpose, the database is running alongside with
     the application containers and a new schema is created at every
@@ -60,7 +60,7 @@ def create_projections():
 
 
 def setup_worker():
-    """Setup Dramatiq with Redis as a queue.
+    """Set up Dramatiq with Redis as a queue.
 
     Dramatiq manages the message passing to background workers which run
     long tasks to avoid stalling the application responses for too long.

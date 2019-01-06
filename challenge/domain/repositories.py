@@ -79,7 +79,6 @@ class AggregatesRepository:
             # Get the class in the `event` column from the translation model.
             event_cls = getattr(translation, row.event)
             kwargs = row.data
-            #kwargs['id'] = row.uuid
 
             instance = event_cls(**kwargs)
 
