@@ -51,7 +51,7 @@
         }
 
         // Get translations from the JSON route.
-        $.getJSON("/json/" + page, function (data) {
+        $.getJSON("/json?page=" + page, function (data) {
             rows = "";
             $(data).each(function (i, translation) {
                 if (translation.status === "finished") {

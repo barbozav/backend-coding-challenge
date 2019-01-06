@@ -60,14 +60,14 @@ def translation_task(id):
         event = TranslationPending.create(uid)
         translation.apply(event)
         repository.save(translation)
+        projections_task.send(id)
         _poll_translation(id)
     else:
         event = TranslationAborted.create(
-            f''Translation service request failed.'')
+            f'Translation service request failed.')
         translation.apply(event)
         repository.save(translation)
-
-    projections_task.send(id)
+        projections_task.send(id)
 
 
 def _poll_translation(id):

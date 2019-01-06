@@ -45,11 +45,10 @@ def index():
         return redirect(url_for('index'))
 
     # GET handling
-    logger.debug(f'processing GET "/"')
-
     page = request.args.get('page', 1, type=int)
-
     translations = projections.get(page)
+    logger.debug(
+        f'processing GET "/json", page:{page}/{translations.last_page}')
 
     next_url = url_for('index', page=translations.next_page) \
         if translations.has_next else None
@@ -76,11 +75,10 @@ def translations():
             and a page can be selected passing this URL argument.
 
     """
-    page = request.args.get('page')
-
-    logger.debug(f'processing GET "/json"')
-
+    page = request.args.get('page', 1, type=int)
     pagination = projections.get(page)
+
+    logger.debug(f'processing GET "/json", page:{page}/{pagination.last_page}')
 
     translations_json = jsonify([{
         'text':

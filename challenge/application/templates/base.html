@@ -19,9 +19,8 @@ Coding Challenge
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('translations') }}">JSON</a></li>
-                <li><a href="{{ url_for('index') }}">About</a></li>
+                <li><a href="{{ url_for('index') }}">Application</a></li>
+                <li><a href="{{ url_for('translations', page=request.args.get('page', 1)) }}">JSON</a></li>
             </ul>
         </div>
     </div>

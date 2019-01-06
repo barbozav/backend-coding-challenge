@@ -1,3 +1,5 @@
+import math
+
 from attr import attrib, attrs
 from dynaconf import settings
 
@@ -44,6 +46,11 @@ class Pagination:
         """Return the next page number if it exists."""
         return self.page + 1 if self.has_next else None
 
+    @property
+    def last_page(self):
+        """Return the last page."""
+        return math.ceil(self.total / settings.TRANSLATIONS_PER_PAGE)
+
 
 class TranslationProjections:
     """Interface between the application layer and persistence layer.
@@ -64,7 +71,7 @@ class TranslationProjections:
         self._repository = AggregatesRepository(Translation,
                                                 PostgresEventStore())
 
-    def get(self, session, page=1):
+    def get(self, page=1):
         """Get translation items from a single page.
 
         Args:
