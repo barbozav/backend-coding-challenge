@@ -40,7 +40,6 @@ class PostgresEventStore(EventStore):
         events = aggregate.events
         event_stream = EventStream(version, events)
 
-        logger.debug(f'loaded aggregate: {aggregate_uuid}')
         logger.debug(event_stream)
 
         return event_stream
@@ -72,10 +71,8 @@ class PostgresEventStore(EventStore):
                    f"WHERE version = {expected_version} "
                    f"AND uuid = '{aggregate_uuid}'")
 
-            result = session.execute(sql)
-
-            logger.debug(f'updated aggregate: {aggregate_uuid}')
             logger.debug(sql)
+            result = session.execute(sql)
 
             if result.rowcount != 1:
                 raise ConcurrencyError(
@@ -86,10 +83,8 @@ class PostgresEventStore(EventStore):
             sql = (f"INSERT INTO aggregates (uuid, version) "
                    f"VALUES ('{aggregate_uuid}', 1)")
 
-            result = session.execute(sql)
-
-            logger.info(f'new aggregate: {aggregate_uuid}')
             logger.debug(sql)
+            result = session.execute(sql)
 
             if result.rowcount != 1:
                 raise WriteError('Failed to insert aggregate into database.')
@@ -109,8 +104,8 @@ class PostgresEventStore(EventStore):
 
             result = session.execute(sql)
 
+            logger.debug(sql)
             if result.rowcount:
                 logger.info(f'new event: {event.id}')
             else:
-                logger.debug(f'nop')
-            logger.debug(sql)
+                logger.debug(f'no new event')

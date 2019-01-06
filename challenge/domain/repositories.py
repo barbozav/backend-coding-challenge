@@ -46,7 +46,6 @@ class AggregatesRepository:
 
         """
         logger.info(f'loading aggregate: {aggregate_uuid}...')
-
         with session_scope() as session:
             events_stream = self._event_store.load_stream(
                 session, aggregate_uuid)

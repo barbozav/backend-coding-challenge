@@ -1,11 +1,10 @@
-from functools import singledispatch
-
 from attr import attrib, attrs
 from dynaconf import settings
 
-from challenge.domain.model.translation import (
-    TranslationFinished, TranslationPending, TranslationRequested)
+from challenge.domain.model.translation import Translation
+from challenge.domain.repositories import AggregatesRepository
 from challenge.persistence import session_scope
+from challenge.persistence.eventstore.postgresql import PostgresEventStore
 from challenge.utils.logging import logger
 
 
@@ -62,12 +61,18 @@ class TranslationProjections:
 
     def __init__(self, read_model):
         self._read_model = read_model
+        self._repository = AggregatesRepository(Translation,
+                                                PostgresEventStore())
 
-    def paginate(self, page=1):
-        """Get all translation items from a single page.
+    def get(self, session, page=1):
+        """Get translation items from a single page.
 
         Args:
             page (int): Page number.
+
+        Returns:
+            Pagination: a `Pagination` instance with the translation
+                items and pagination properties.
 
         """
         with session_scope() as session:
@@ -76,39 +81,25 @@ class TranslationProjections:
 
         return Pagination(items=items, total=total, page=page)
 
-    def handle(self, aggregate_uuid, event):
-        """Handle events and update the projections.
-
-        Received an event, it decides whether insert a new projection
-        or update the existing ones accordingly.
+    def update(self, aggregate_uuid):
+        """Update a translation from the aggregates repository.
 
         Args:
             aggregate_uuid (str): An UUID4 string to which aggregate
                 projection should be update.
-            event (Event): An `Event` to handle. The read-model data
-                persistence operation is chosen based on this event.
 
         """
+        translation = self._repository.get(aggregate_uuid)
 
-        @singledispatch
-        def _handle(_event):
-            pass
-
-        @_handle.register(TranslationRequested)
-        def _(_event):
-            with session_scope() as session:
-                self._read_model.create(session, aggregate_uuid, _event.text)
-
-        @_handle.register(TranslationPending)
-        def _(_event):
-            with session_scope() as session:
-                self._read_model.update_to_pending(session, aggregate_uuid)
-
-        @_handle.register(TranslationFinished)
-        def _(_event):
-            with session_scope() as session:
-                self._read_model.update_to_finished(session, aggregate_uuid,
-                                                    _event.translated_text)
+        status = translation.status
+        text = translation.text
+        if status == 'finished':
+            translated_text = translation.translated_text
+        else:
+            translated_text = None
 
         logger.info(f'updating projection: {aggregate_uuid}')
-        _handle(event)
+        logger.debug(f'{text}, {status}, {translated_text}')
+        with session_scope() as session:
+            self._read_model.insert_or_update(session, aggregate_uuid, status,
+                                              text, translated_text)

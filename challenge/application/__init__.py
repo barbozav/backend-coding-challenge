@@ -2,9 +2,7 @@ import dramatiq
 from dramatiq.brokers.redis import RedisBroker
 from dynaconf import FlaskDynaconf, settings
 from flask import Flask
-from flask.logging import default_handler
 from flask_bootstrap import Bootstrap
-from flask_sse import sse
 
 from challenge.domain.model.translation import Translation
 from challenge.domain.projections import TranslationProjections
@@ -18,35 +16,78 @@ from challenge.utils.logging import logger
 
 
 def setup_database():
+    """Setup database and create tables.
+
+    For this application purpose, the database is running alongside with
+    the application containers and a new schema is created at every
+    startup.
+
+    In production, a hosted database should be used and creating the
+    whole schema and all tables would be unnecessary.
+
+    """
     logger.info('creating databases')
     db = create_db()
+    # Comment the line below if not using a container'ized database.
     create_tables(db)
+    return db
 
 
 def create_repository():
+    """Create repository.
+
+    It works as an interface between application and persisted data for
+    the event sourcing design (write-model).
+
+    Other repositories could be set here.
+
+    """
     logger.info('creating event sourced repositories')
     return AggregatesRepository(Translation, PostgresEventStore())
 
 
 def create_projections():
+    """Create repository.
+
+    It works as an interface between application and persisted data for
+    visualization with relevant information for queries (read-model).
+
+    Other projections could be set here.
+
+    """
     logger.info('creating read model projections')
     return TranslationProjections(PostgresTranslation())
 
 
 def setup_worker():
+    """Setup Dramatiq with Redis as a queue.
+
+    Dramatiq manages the message passing to background workers which run
+    long tasks to avoid stalling the application responses for too long.
+
+    Redis is used as a message queue for simplicity sake. A more robust
+    infrastructure could configure a RabbitMQ here, for example.
+
+    """
     logger.info('creating tasks queue')
     broker = RedisBroker(url=f'{settings.REDIS_URL}')
     dramatiq.set_broker(broker)
 
 
 def create_app():
+    """Create Flask application and initialize Flask extensions.
+
+    This application reads configuration from environment variables
+    using FlaskDynaconf extension.
+    It uses the Bootstrap extension for the frontend and also for the
+    frontend (dynamic updates), an event server is set with the
+    Flask-SSE blueprint.
+
+    """
     logger.info('starting application')
     app = Flask(__name__)
     Bootstrap(app)
     FlaskDynaconf(app)
-    app.register_blueprint(sse, url_prefix='/stream')
-
-    app.logger.removeHandler(default_handler)
 
     return app
 

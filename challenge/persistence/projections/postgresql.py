@@ -24,7 +24,7 @@ class PostgresTranslation:
         per_page = per_page or settings.TRANSLATIONS_PER_PAGE
 
         return session.query(TranslationModel).order_by(
-            TranslationModel.length.asc()()).limit(
+            TranslationModel.length.asc()).limit(
                 settings.TRANSLATIONS_PER_PAGE).offset(
                     (page - 1) * settings.TRANSLATIONS_PER_PAGE)
 
@@ -40,62 +40,40 @@ class PostgresTranslation:
         """
         return session.query(TranslationModel).count()
 
-    def create(self, session, aggregate_uuid, text):
-        """Insert a newly created aggregate in the "translations" table.
+    def insert_or_update(self,
+                         session,
+                         aggregate_uuid,
+                         status,
+                         text,
+                         translated_text=None):
+        """Insert or update an aggregate in the "translations" table.
 
         Args:
             session (Session): A session context into which operate.
             aggregate_uuid (str): An UUID4 string. It must match its
                 respective event sourced aggregate.
             text (str): The text sent to the translation service.
+            status (str): The translation processing status.
+            translated_text (str): The text received from the
+                translation service.
 
         """
-        # Newly created translations have a `translated_text`` length
-        # automatically set to 0, putting them in the beginning of the
-        # first page for visualization (and tracking its status).
-        values = (f"('{aggregate_uuid}', 'requested', 0, '{text}')")
-        sql = (f'INSERT INTO translations (uuid, status, length, text) '
-               f'VALUES {values} ON CONFLICT DO NOTHING')
+        if status == 'requested':
+            values = (f"('{aggregate_uuid}', 'requested', 0, '{text}')")
+            sql = (f'INSERT INTO translations (uuid, status, length, text) '
+                   f'VALUES {values} ON CONFLICT DO NOTHING')
 
-        session.execute(sql)
+        elif status == 'pending':
+            sql = (f"UPDATE translations "
+                   f"SET status = 'pending' "
+                   f"WHERE uuid = '{aggregate_uuid}'")
 
-        logger.debug('inserted into read-model')
+        elif status == 'finished':
+            sql = (f"UPDATE translations "
+                   f"SET status = 'finished', "
+                   f"length = {len(translated_text)}, "
+                   f"translated_text = '{translated_text}' "
+                   f"WHERE uuid = '{aggregate_uuid}'")
+
         logger.debug(sql)
-
-    def update_to_pending(self, session, aggregate_uuid):
-        """Update a translation aggregate status to "pending".
-
-        Args:
-            session (Session): A session context into which operate.
-            aggregate_uuid (str): An UUID4 string. It must match its
-                respective event sourced aggregate.
-
-        """
-        sql = (f"UPDATE translations "
-               f"SET status = 'pending' "
-               f"WHERE uuid = '{aggregate_uuid}'")
-
         session.execute(sql)
-
-        logger.debug('updated read-model')
-        logger.debug(sql)
-
-    def update_to_finished(self, session, aggregate_uuid, translated_text):
-        """Update a translation aggregate status to "finished".
-
-        Args:
-            session (Session): A session context into which operate.
-            aggregate_uuid (str): An UUID4 string. It must match its
-                respective event sourced aggregate.
-
-        """
-        sql = (f"UPDATE translations "
-               f"SET status = 'finished', "
-               f"SET length = {len(translated_text)}, "
-               f"translated_text = '{translated_text}' "
-               f"WHERE uuid = '{aggregate_uuid}'")
-
-        session.execute(sql)
-
-        logger.debug('updated read-model')
-        logger.debug(sql)

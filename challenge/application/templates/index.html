@@ -43,9 +43,10 @@
     var source = new EventSource("{{ url_for('sse.stream') }}");
     source.addEventListener('sse', function (event) {
         var data = JSON.parse(event.data);
+        alert("Success.")
     }, false);
     source.addEventListener('error', function (event) {
-        print("Failed to connect to event stream.");
+        alert("Failed.");
     }, false);
 </script>
 {% endblock %}
