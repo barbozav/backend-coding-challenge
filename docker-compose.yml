@@ -1,4 +1,4 @@
-version: '2.1'
+version: "2.1"
 
 services:
   postgres:
@@ -50,4 +50,4 @@ services:
     depends_on:
       - postgres
       - redis
-    command: "dramatiq --processes 4 --threads 2 challenge.application.tasks"
+    command: "dramatiq --processes 1 --threads 1 challenge.application.tasks"

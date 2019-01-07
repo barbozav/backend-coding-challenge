@@ -1,7 +1,8 @@
 # from dynaconf import settings
 from flask import jsonify, redirect, render_template, request, url_for
 
-from challenge.application import app, projections, repository, tasks
+from challenge.application import (app, projections, repository, tasks,
+                                   translator)
 from challenge.application.forms import TranslationForm
 from challenge.domain.model.translation import Translation
 from challenge.utils.logging import logger
@@ -90,3 +91,25 @@ def translations():
     } for translation in pagination.items])
 
     return translations_json
+
+
+@app.route('/callback/<id>', methods=['POST'])
+def callback(id=None):
+    """Callback route to update a Translation resource.
+
+    This route is used by an external translation service to notify it
+    finished processing a text.
+
+    Args:
+        id (str): The Translation aggregate ID to update it.
+
+    """
+    if id:
+        logger.debug(f'processing POST "/callback/{id}"')
+        translation = repository.get(id)
+        translation = translator.get(translation)
+        repository.save(translation)
+        tasks.projections_task.send(id)
+        return jsonify(success=True)
+
+    return jsonify(error=404, text="Resource not found.")

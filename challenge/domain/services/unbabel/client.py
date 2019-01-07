@@ -5,6 +5,10 @@ import requests
 SANDBOX_API_URL = 'https://sandbox.unbabel.com/tapi/v2/'
 
 
+class UnbabelClientError(Exception):
+    """Unbabel client error."""
+
+
 class Client:
     """Unbabel's API minimal client.
 
@@ -28,12 +32,24 @@ class Client:
         }
 
     def _get(self, url):
-        return requests.get(url, headers=self._headers)
+        try:
+            response = requests.get(url, headers=self._headers)
+        except:  # noqa: E722
+            raise UnbabelClientError(f'Failed to GET "{url}".')
+        return response
 
     def _post(self, url, payload):
-        return requests.post(url, json=payload, headers=self._headers)
+        try:
+            response = requests.post(url, json=payload, headers=self._headers)
+        except:  # noqa: E722
+            raise UnbabelClientError(f'Failed to POST {payload} to "{url}".')
+        return response
 
-    def request_translation(self, input, source_language, target_language):
+    def request_translation(self,
+                            input,
+                            source_language,
+                            target_language,
+                            callback_url=None):
         """Send a manual translation request to Unbabel's API.
 
         Args:
@@ -42,6 +58,8 @@ class Client:
                 instance: 'en' for English, 'es' for Spanish, 'pt' for
                 Portuguese.
             target_language (str): Translated (target) text language.
+            callback_url (str): A calllback URL in which the Unbabel's
+                API will post whenever the translation is finished.
 
         Returns:
             dict: A JSON dictionary with the API response payload.
@@ -52,8 +70,11 @@ class Client:
         payload = {
             'text': input,
             'source_language': source_language,
-            'target_language': target_language
+            'target_language': target_language,
         }
+
+        if callback_url:
+            payload['callback_url'] = callback_url
 
         return self._post(url, payload).json()
 

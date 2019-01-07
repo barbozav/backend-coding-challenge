@@ -33,7 +33,7 @@ My references are linked here alongside with the roadmap topics - some I have al
 2. Implement a simple [Unbabel API](https://developers.unbabel.com/) client. **[OK]**
 3. Test the Unbabel's API client.
 4. Implement the Event Sourcing model (following this [blog post](https://breadcrumbscollector.tech/implementing-event-sourcing-in-python-part-1-aggregates/)). **[OK]**
-5. Test (unit) the Event Sourcing model with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/).
+5. Test (unit) the Event Sourcing model with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/). **[OK]**
 6. Implement the Event Sourcing persistence (see this [blog post](https://breadcrumbscollector.tech/implementing-event-sourcing-in-python-part-2-robust-event-store-atop-postgresql/)). **[OK]**
 7. Test (unit) the Event Sourcing persistence.
 8. Review good practices for bootstraping a Flask application ([Flask Mega-tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world)). **[OK]**
@@ -43,19 +43,19 @@ My references are linked here alongside with the roadmap topics - some I have al
 12. Study a production server (see [gunicorn](http://docs.gunicorn.org/en/stable/design.html)). **[OK]**
 13. Improve the docker-compose configuration. **[OK]**
 14. Improve the application frontend. **[OK]**
-15. Implement an event queue for the frontend (try [Flask-SSE](https://flask-sse.readthedocs.io/en/latest/quickstart.html)). **[OK]**
-16. Implement dynamic updates for the frontend.
+15. ~~Implement an event queue for the frontend (try [Flask-SSE](https://flask-sse.readthedocs.io/en/latest/quickstart.html)). **[OK]**~~
+16. Implement dynamic updates for the frontend with polling. **[OK]**
 17. Study how to test Flask applications.
 18. Test (functional) the Flask application.
 19. Improve error handling.
-20. Improve environment variables and configuration.
-21. Replace resource polling with a callback to an URL if an environment variable is set.
-21. Test application performance with [JMeter](https://jmeter.apache.org/) or [Locust](http://www.sphinx-doc.org/en/master/).
-22. Properly document everything with _docstrings_.
-23. Generate beautiful documentation with [Sphinx](http://www.sphinx-doc.org/en/master/).
-24. Write a great README. **[OK]**
-25. Reorganize commits with `git rebase`.
-26. Deliver it.
+20. Improve environment variables and configuration. **[OK]**
+21. Replace resource polling with a callback to an URL if an environment variable is set. **[OK]**
+22. Test application performance with [JMeter](https://jmeter.apache.org/) or [Locust](http://www.sphinx-doc.org/en/master/).
+23. Properly document everything with _docstrings_. **[OK]**
+24. Generate beautiful documentation with [Sphinx](http://www.sphinx-doc.org/en/master/).
+25. Write a great README. **[OK]**
+26. Reorganize commits with `git rebase`.
+27. Deliver it.
 
 ## Solution design
 

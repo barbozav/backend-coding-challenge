@@ -1,3 +1,5 @@
+import sys
+
 import dramatiq
 from dramatiq.brokers.redis import RedisBroker
 from dynaconf import FlaskDynaconf, settings
@@ -5,6 +7,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 
 from challenge.domain.model.translation import Translation
+from challenge.domain.services.translator import Translator
 from challenge.domain.projections import TranslationProjections
 from challenge.domain.repositories import AggregatesRepository
 from challenge.persistence import create_db, create_tables
@@ -13,6 +16,13 @@ from challenge.persistence.eventstore.postgresql import PostgresEventStore
 from challenge.persistence.projections import model as p_model  # noqa: F401
 from challenge.persistence.projections.postgresql import PostgresTranslation
 from challenge.utils.logging import logger
+
+# Workaround an un-configured environment
+if (not settings.get('API_CLIENT')) or (not settings.get('API_TOKEN')) or (
+        not settings.get('API_CALLBACK')):
+    logger.error(f'Have you configured the ".env" file?')
+    while True:
+        pass
 
 
 def setup_database():
@@ -95,6 +105,8 @@ def create_app():
 db = setup_database()
 repository = create_repository()
 projections = create_projections()
+translator = Translator(settings.API_SOURCE_LANGUAGE,
+                        settings.API_TARGET_LANGUAGE)
 setup_worker()
 app = create_app()
 
