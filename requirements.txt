@@ -5,8 +5,10 @@ Flask
 flask-bootstrap
 flask-wtf
 flask-sse
+freezegun
 gevent
 gunicorn
+hypothesis
 pika
 psycopg2
 pytest

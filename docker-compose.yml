@@ -1,4 +1,4 @@
-version: "2.1"
+version: "3.7"
 
 services:
   postgres:
@@ -21,8 +21,6 @@ services:
     container_name: challenge_app
     restart: always
     build: .
-    env_file:
-      - .env
     ports:
       - 5000:5000
     volumes:
@@ -40,8 +38,6 @@ services:
     container_name: challenge_worker
     restart: always
     build: .
-    env_file:
-      - .env
     volumes:
       - .:/src
     links:
@@ -50,4 +46,4 @@ services:
     depends_on:
       - postgres
       - redis
-    command: "dramatiq --processes 1 --threads 1 challenge.application.tasks"
+    command: "dramatiq-gevent -p 9 challenge.application.tasks"
