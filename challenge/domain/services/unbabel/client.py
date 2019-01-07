@@ -36,12 +36,16 @@ class Client:
             response = requests.get(url, headers=self._headers)
         except:  # noqa: E722
             raise UnbabelClientError(f'Failed to GET "{url}".')
+        if response.status_code > 400:
+            raise UnbabelClientError(f'Failed to GET "{url}".')
         return response
 
     def _post(self, url, payload):
         try:
             response = requests.post(url, json=payload, headers=self._headers)
         except:  # noqa: E722
+            raise UnbabelClientError(f'Failed to POST {payload} to "{url}".')
+        if response.status_code > 400:
             raise UnbabelClientError(f'Failed to POST {payload} to "{url}".')
         return response
 

@@ -54,6 +54,7 @@ class Translator:
 
         logger.debug(
             f"Requesting translation with callback to '{callback_url}'")
+
         response = self._client.request_translation(
             text, self._source_language, self._target_language, callback_url)
 
@@ -103,7 +104,7 @@ class Translator:
             status = response['status']
 
             # Check if status changed
-            if (translation.status != status):
+            if (translation.status == status):
                 return translation
 
             logger.debug(f'Updating translation {translation.id}:'
@@ -111,7 +112,7 @@ class Translator:
 
             # Check wheter update a finished translation
             if status in _translation_finished:
-                event = TranslationFinished(response['translatedText'])
+                event = TranslationFinished.create(response['translatedText'])
                 translation.apply(event)
             # Check wheter update a pending translation
             elif status in _translation_pending:

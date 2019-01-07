@@ -122,3 +122,7 @@ class Aggregate(ABC):
 
         """
         pass
+
+    def as_dict(self):
+        """Represent the Aggregate as a dictionary."""
+        return {'id': self.id, 'status': self.status, 'changes': self.changes}
