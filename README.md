@@ -31,11 +31,11 @@ My references are linked here alongside with the roadmap topics - some I have al
 
 1. Fork the project and start feature branches using something like [Karma git](https://karma-runner.github.io/3.0/dev/git-commit-msg.html). **[OK]**
 2. Implement a simple [Unbabel API](https://developers.unbabel.com/) client. **[OK]**
-3. Test the Unbabel's API client.
+3. Test the Unbabel's API client. **[OK]**
 4. Implement the Event Sourcing model (following this [blog post](https://breadcrumbscollector.tech/implementing-event-sourcing-in-python-part-1-aggregates/)). **[OK]**
 5. Test (unit) the Event Sourcing model with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/). **[OK]**
 6. Implement the Event Sourcing persistence (see this [blog post](https://breadcrumbscollector.tech/implementing-event-sourcing-in-python-part-2-robust-event-store-atop-postgresql/)). **[OK]**
-7. Test (unit) the Event Sourcing persistence.
+7. Test (unit) the Event Sourcing persistence. 
 8. Review good practices for bootstraping a Flask application ([Flask Mega-tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world)). **[OK]**
 9. Implement a simple Flask application which runs locally. **[OK]**
 10. Configure a simple `docker-compose`. **[OK]**
@@ -47,7 +47,7 @@ My references are linked here alongside with the roadmap topics - some I have al
 16. Implement dynamic updates for the frontend with polling. **[OK]**
 17. Study how to test Flask applications.
 18. Test (functional) the Flask application.
-19. Improve error handling.
+19. Improve error handling. **[OK]**
 20. Improve environment variables and configuration. **[OK]**
 21. Replace resource polling with a callback to an URL if an environment variable is set. **[OK]**
 22. Test application performance with [JMeter](https://jmeter.apache.org/) or [Locust](http://www.sphinx-doc.org/en/master/).
@@ -141,7 +141,7 @@ The whole application and tests run inside a Docker container and a `docker-comp
 
 * Before trying it, one has to fill the gaps in the `.env`file - as I'm not versioning API keys or callback URL.
 
-~~To run the tests:~~
+To run the tests:
 
 ```bash
 docker-compose up -f docker-compose.tests.yml --build --force-recreate
