@@ -1,4 +1,5 @@
-# from dynaconf import settings
+import json
+
 from flask import jsonify, redirect, render_template, request, url_for
 
 from challenge.application import (app, projections, repository, tasks,
@@ -36,6 +37,9 @@ def index():
         logger.debug(f'processing POST "/"')
 
         text = form.text.data
+        text = text.replace("'", "\\'")
+        text = text.replace('\r', '')
+        text = text.replace('\n', '')
         translation = Translation.create(text)
 
         repository.save(translation)

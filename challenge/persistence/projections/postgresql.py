@@ -1,4 +1,5 @@
 from dynaconf import settings
+from sqlalchemy.sql import text
 
 from challenge.persistence.projections.model import TranslationModel
 from challenge.utils.logging import logger
@@ -44,7 +45,7 @@ class PostgresTranslation:
                          session,
                          aggregate_uuid,
                          status,
-                         text,
+                         original_text,
                          translated_text=None):
         """Insert or update an aggregate in the "translations" table.
 
@@ -59,21 +60,33 @@ class PostgresTranslation:
 
         """
         if status == 'requested':
-            values = (f"('{aggregate_uuid}', 'requested', 0, '{text}')")
-            sql = (f'INSERT INTO translations (uuid, status, length, text) '
-                   f'VALUES {values} ON CONFLICT DO NOTHING')
+            sql = text(
+                f'INSERT INTO translations (uuid, status, length, text) '
+                f'VALUES (:uuid, :status, :length, :text) ON CONFLICT DO NOTHING'
+            )
+            values = {
+                'uuid': aggregate_uuid,
+                'status': 'requested',
+                'length': 0,
+                'text': original_text
+            }
 
         elif status == 'pending':
-            sql = (f"UPDATE translations "
-                   f"SET status = 'pending' "
-                   f"WHERE uuid = '{aggregate_uuid}'")
+            sql = text(f"UPDATE translations "
+                       f"SET status = 'pending' "
+                       f"WHERE uuid = :aggregate_uuid")
+            values = {'aggregate_uuid': aggregate_uuid}
 
         elif status == 'finished':
-            sql = (f"UPDATE translations "
-                   f"SET status = 'finished', "
-                   f"length = {len(translated_text)}, "
-                   f"translated_text = '{translated_text}' "
-                   f"WHERE uuid = '{aggregate_uuid}'")
+            sql = text(f"UPDATE translations "
+                       f"SET status = 'finished', "
+                       f"length = {len(translated_text)}, "
+                       f"translated_text = :translated_text "
+                       f"WHERE uuid = :aggregate_uuid")
+            values = {
+                'aggregate_uuid': aggregate_uuid,
+                'translated_text': translated_text
+            }
 
         logger.debug(sql)
-        session.execute(sql)
+        session.execute(sql, values)

@@ -1,8 +1,6 @@
 from string import ascii_letters, digits, printable
 
-from hypothesis import assume
-from hypothesis.strategies import (composite, dictionaries, fixed_dictionaries,
-                                   floats, just, lists, none, nothing, one_of,
+from hypothesis.strategies import (composite, integers, just, lists,
                                    sampled_from, text)
 
 from challenge.domain.model.base import Event

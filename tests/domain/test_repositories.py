@@ -17,19 +17,24 @@ class TestRepositories:
         return AggregatesRepository(Translation, PostgresEventStore())
 
     @given(translation=valid_translation())
-    def test_save_aggregate_persists_aggregate(self, repository, translation):
+    def test_save_persists_translation_aggregate(self, repository,
+                                                 translation):
         repository.save(translation)
         aggregate = repository.get(translation.id)
 
         assert isinstance(aggregate, Translation)
-        assert translation.as_dict() == aggregate.as_dict()
+        assert aggregate.id == translation.id
+        assert aggregate.status == translation.status
+        assert aggregate.changes == translation.changes
 
     @given(translations=valid_translation_list())
-    def test_get_returns_aggregate(self, repository, translations):
+    def test_get_returns_translation_aggregate(self, repository, translations):
         for translation in translations:
             repository.save(translation)
 
         for translation in translations:
             aggregate = repository.get(translation.id)
             assert isinstance(aggregate, Translation)
-            assert translation.as_dict() == aggregate.as_dict()
+            assert aggregate.id == translation.id
+            assert aggregate.status == translation.status
+            assert aggregate.changes == translation.changes

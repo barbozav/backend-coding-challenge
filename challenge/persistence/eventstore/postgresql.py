@@ -2,6 +2,7 @@ import json
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import text
 
 from challenge.persistence.eventstore.base import EventStore, EventStream
 from challenge.persistence.eventstore.errors import (ConcurrencyError,
@@ -66,13 +67,17 @@ class PostgresEventStore(EventStore):
         if expected_version:
             # If an `expected_version` is given, the aggregate must be
             # updated as it is already in some version.
-            sql = (f"UPDATE aggregates "
-                   f"SET version = {expected_version} + 1 "
-                   f"WHERE version = {expected_version} "
-                   f"AND uuid = '{aggregate_uuid}'")
+            sql = text(f"UPDATE aggregates "
+                       f"SET version = :expected_version + 1 "
+                       f"WHERE version = :expected_version "
+                       f"AND uuid = :aggregate_uuid")
+            values = {
+                'expected_version': expected_version,
+                'aggregate_uuid': aggregate_uuid
+            }
 
-            logger.debug(sql)
-            result = session.execute(sql)
+            logger.debug(sql, values)
+            result = session.execute(sql, values)
 
             if result.rowcount != 1:
                 raise ConcurrencyError(
@@ -80,29 +85,34 @@ class PostgresEventStore(EventStore):
 
         else:
             # Or else it's a new aggregate.
-            sql = (f"INSERT INTO aggregates (uuid, version) "
-                   f"VALUES ('{aggregate_uuid}', 1)")
+            sql = text(f"INSERT INTO aggregates (uuid, version) "
+                       f"VALUES (:aggregate_uuid, 1)")
+            values = {'aggregate_uuid': aggregate_uuid}
 
             logger.debug(sql)
-            result = session.execute(sql)
+            result = session.execute(sql, values)
 
             if result.rowcount != 1:
                 raise WriteError('Failed to insert aggregate into database.')
 
         for event in events:
-            values = (f"('{event.id}', '{aggregate_uuid}', "
-                      f"'{event.__class__.__name__}', "
-                      f"'{json.dumps(event.as_dict())}')")
-
             # Iterate through events and trying to add them to "events" table,
             # relating each and every one with the same aggregate. But, in the
             # occasion an event is already there (based on its UUID column),
             # it's dropped (`DO NOTHING`).
 
-            sql = (f"INSERT INTO events (uuid, aggregate_uuid, event, data) "
-                   f"VALUES {values} ON CONFLICT (uuid) DO NOTHING")
+            sql = text(
+                f"INSERT INTO events (uuid, aggregate_uuid, event, data) "
+                f"VALUES (:uuid,:aggregate_uuid,:event,:data) ON CONFLICT (uuid) DO NOTHING"
+            )
+            values = {
+                'uuid': event.id,
+                'aggregate_uuid': aggregate_uuid,
+                'event': event.__class__.__name__,
+                'data': json.dumps(event.as_dict())
+            }
 
-            result = session.execute(sql)
+            result = session.execute(sql, values)
 
             logger.debug(sql)
             if result.rowcount:

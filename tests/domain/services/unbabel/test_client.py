@@ -8,7 +8,8 @@ from tests.fixtures import constants
 
 class TestClient():
     def test_request_translation_payload(self):
-        c = Client(constants.API_CLIENT, constants.API_TOKEN)
+        c = Client(constants.API_CLIENT, constants.API_TOKEN,
+                   constants.API_URL)
         r = c.request_translation(
             constants.API_PAYLOAD['text'],
             constants.API_PAYLOAD['source_language'],
@@ -35,7 +36,7 @@ class TestClient():
 
     def test_get_translation_payload(self):
         c = Client(constants.API_CLIENT, constants.API_TOKEN)
-        r = c.get_translation(constants.API_PAYLOAD_UID)
+        r = c.get_translation(constants.API_PAYLOAD['uid'])
 
         assert 'order_number' in r.keys()
         assert 'price' in r.keys()
